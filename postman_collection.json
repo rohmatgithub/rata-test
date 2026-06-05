@@ -1,0 +1,727 @@
+{
+  "info": {
+    "name": "Healthcare Scheduling System",
+    "description": "API Collection untuk Healthcare Scheduling System - Auth Service & Schedule Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "auth_url",
+      "value": "http://localhost:3001/graphql"
+    },
+    {
+      "key": "schedule_url",
+      "value": "http://localhost:3002/graphql"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "customer_id",
+      "value": ""
+    },
+    {
+      "key": "doctor_id",
+      "value": ""
+    },
+    {
+      "key": "schedule_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth Service",
+      "description": "Authentication & User Management (Port 3001)",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Register($input: RegisterInput!) {\n  register(input: $input) {\n    accessToken\n    refreshToken\n    user {\n      id\n      email\n      createdAt\n      updatedAt\n    }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n  }\n}"
+              }
+            },
+            "url": {
+              "raw": "{{auth_url}}",
+              "host": ["{{auth_url}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.register) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.data.register.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.data.register.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Login($input: LoginInput!) {\n  login(input: $input) {\n    accessToken\n    refreshToken\n    user {\n      id\n      email\n      createdAt\n      updatedAt\n    }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n  }\n}"
+              }
+            },
+            "url": {
+              "raw": "{{auth_url}}",
+              "host": ["{{auth_url}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.login) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.data.login.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.data.login.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ValidateToken($token: String!) {\n  validateToken(token: $token) {\n    id\n    email\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": "{\n  \"token\": \"{{access_token}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{auth_url}}",
+              "host": ["{{auth_url}}"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation RefreshToken($refreshToken: String!) {\n  refreshToken(refreshToken: $refreshToken) {\n    accessToken\n    refreshToken\n  }\n}",
+                "variables": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{auth_url}}",
+              "host": ["{{auth_url}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.data.refreshToken.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.data.refreshToken.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Logout($refreshToken: String!) {\n  logout(refreshToken: $refreshToken)\n}",
+                "variables": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{auth_url}}",
+              "host": ["{{auth_url}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schedule Service",
+      "description": "Customer, Doctor & Schedule Management (Port 3002)",
+      "item": [
+        {
+          "name": "Customer",
+          "item": [
+            {
+              "name": "Create Customer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation CreateCustomer($input: CreateCustomerInput!) {\n  createCustomer(input: $input) {\n    id\n    name\n    email\n    createdAt\n    updatedAt\n  }\n}",
+                    "variables": "{\n  \"input\": {\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\"\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.createCustomer) {",
+                      "    pm.collectionVariables.set('customer_id', jsonData.data.createCustomer.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get All Customers",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "query GetCustomers($pagination: PaginationInput) {\n  customers(pagination: $pagination) {\n    data {\n      id\n      name\n      email\n      createdAt\n      updatedAt\n    }\n    total\n    page\n    limit\n    totalPages\n  }\n}",
+                    "variables": "{\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Get Customer by ID",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "query GetCustomer($id: ID!) {\n  customer(id: $id) {\n    id\n    name\n    email\n    createdAt\n    updatedAt\n  }\n}",
+                    "variables": "{\n  \"id\": \"{{customer_id}}\"\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Update Customer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation UpdateCustomer($input: UpdateCustomerInput!) {\n  updateCustomer(input: $input) {\n    id\n    name\n    email\n    updatedAt\n  }\n}",
+                    "variables": "{\n  \"input\": {\n    \"id\": \"{{customer_id}}\",\n    \"name\": \"John Doe Updated\",\n    \"email\": \"john.updated@example.com\"\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Customer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation DeleteCustomer($id: ID!) {\n  deleteCustomer(id: $id)\n}",
+                    "variables": "{\n  \"id\": \"{{customer_id}}\"\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Doctor",
+          "item": [
+            {
+              "name": "Create Doctor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation CreateDoctor($input: CreateDoctorInput!) {\n  createDoctor(input: $input) {\n    id\n    name\n    createdAt\n    updatedAt\n  }\n}",
+                    "variables": "{\n  \"input\": {\n    \"name\": \"Dr. Smith\"\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.createDoctor) {",
+                      "    pm.collectionVariables.set('doctor_id', jsonData.data.createDoctor.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get All Doctors",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "query GetDoctors($pagination: PaginationInput) {\n  doctors(pagination: $pagination) {\n    data {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n    total\n    page\n    limit\n    totalPages\n  }\n}",
+                    "variables": "{\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Get Doctor by ID",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "query GetDoctor($id: ID!) {\n  doctor(id: $id) {\n    id\n    name\n    createdAt\n    updatedAt\n  }\n}",
+                    "variables": "{\n  \"id\": \"{{doctor_id}}\"\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Update Doctor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation UpdateDoctor($input: UpdateDoctorInput!) {\n  updateDoctor(input: $input) {\n    id\n    name\n    updatedAt\n  }\n}",
+                    "variables": "{\n  \"input\": {\n    \"id\": \"{{doctor_id}}\",\n    \"name\": \"Dr. Smith Jr.\"\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Doctor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation DeleteDoctor($id: ID!) {\n  deleteDoctor(id: $id)\n}",
+                    "variables": "{\n  \"id\": \"{{doctor_id}}\"\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Schedule",
+          "item": [
+            {
+              "name": "Create Schedule",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation CreateSchedule($input: CreateScheduleInput!) {\n  createSchedule(input: $input) {\n    id\n    objective\n    customer {\n      id\n      name\n      email\n    }\n    doctor {\n      id\n      name\n    }\n    scheduledAt\n    duration\n    createdAt\n    updatedAt\n  }\n}",
+                    "variables": "{\n  \"input\": {\n    \"objective\": \"General Checkup\",\n    \"customerId\": \"{{customer_id}}\",\n    \"doctorId\": \"{{doctor_id}}\",\n    \"scheduledAt\": \"2026-06-10T09:00:00Z\",\n    \"duration\": 30\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.data && jsonData.data.createSchedule) {",
+                      "    pm.collectionVariables.set('schedule_id', jsonData.data.createSchedule.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create Schedule (Conflict Test)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation CreateSchedule($input: CreateScheduleInput!) {\n  createSchedule(input: $input) {\n    id\n    objective\n    scheduledAt\n    duration\n  }\n}",
+                    "variables": "{\n  \"input\": {\n    \"objective\": \"Follow Up - Should Fail\",\n    \"customerId\": \"{{customer_id}}\",\n    \"doctorId\": \"{{doctor_id}}\",\n    \"scheduledAt\": \"2026-06-10T09:15:00Z\",\n    \"duration\": 30\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Get All Schedules",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "query GetSchedules($pagination: PaginationInput, $filter: ScheduleFilterInput) {\n  schedules(pagination: $pagination, filter: $filter) {\n    data {\n      id\n      objective\n      customer {\n        id\n        name\n        email\n      }\n      doctor {\n        id\n        name\n      }\n      scheduledAt\n      duration\n      createdAt\n    }\n    total\n    page\n    limit\n    totalPages\n  }\n}",
+                    "variables": "{\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10\n  },\n  \"filter\": null\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Get Schedules by Doctor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "query GetSchedules($pagination: PaginationInput, $filter: ScheduleFilterInput) {\n  schedules(pagination: $pagination, filter: $filter) {\n    data {\n      id\n      objective\n      customer {\n        name\n      }\n      doctor {\n        name\n      }\n      scheduledAt\n      duration\n    }\n    total\n  }\n}",
+                    "variables": "{\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10\n  },\n  \"filter\": {\n    \"doctorId\": \"{{doctor_id}}\"\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Get Schedules by Date Range",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "query GetSchedules($pagination: PaginationInput, $filter: ScheduleFilterInput) {\n  schedules(pagination: $pagination, filter: $filter) {\n    data {\n      id\n      objective\n      customer {\n        name\n      }\n      doctor {\n        name\n      }\n      scheduledAt\n      duration\n    }\n    total\n  }\n}",
+                    "variables": "{\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10\n  },\n  \"filter\": {\n    \"dateFrom\": \"2026-06-01T00:00:00Z\",\n    \"dateTo\": \"2026-06-30T23:59:59Z\"\n  }\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Get Schedule by ID",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "query GetSchedule($id: ID!) {\n  schedule(id: $id) {\n    id\n    objective\n    customer {\n      id\n      name\n      email\n    }\n    doctor {\n      id\n      name\n    }\n    scheduledAt\n    duration\n    createdAt\n    updatedAt\n  }\n}",
+                    "variables": "{\n  \"id\": \"{{schedule_id}}\"\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Schedule",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "graphql",
+                  "graphql": {
+                    "query": "mutation DeleteSchedule($id: ID!) {\n  deleteSchedule(id: $id)\n}",
+                    "variables": "{\n  \"id\": \"{{schedule_id}}\"\n}"
+                  }
+                },
+                "url": {
+                  "raw": "{{schedule_url}}",
+                  "host": ["{{schedule_url}}"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

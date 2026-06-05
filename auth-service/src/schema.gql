@@ -1,0 +1,55 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthResponse {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  """Login with email and password"""
+  login(input: LoginInput!): AuthResponse!
+
+  """Logout and invalidate refresh token"""
+  logout(refreshToken: String!): Boolean!
+
+  """Refresh access token using refresh token"""
+  refreshToken(refreshToken: String!): RefreshTokenResponse!
+
+  """Register a new user"""
+  register(input: RegisterInput!): AuthResponse!
+}
+
+type Query {
+  """Validate token and return user info"""
+  validateToken(token: String!): User!
+}
+
+type RefreshTokenResponse {
+  accessToken: String!
+  refreshToken: String!
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  updatedAt: DateTime!
+}
