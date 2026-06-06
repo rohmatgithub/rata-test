@@ -1,11 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { CustomerResolver } from './customer.resolver';
 import { CustomerService } from './customer.service';
 import { AuthGuard } from '../common/guards/auth.guard';
 
 describe('CustomerResolver', () => {
   let resolver: CustomerResolver;
-  let customerService: CustomerService;
 
   const mockCustomerService = {
     create: jest.fn(),
@@ -16,7 +15,7 @@ describe('CustomerResolver', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const moduleRef = (await Test.createTestingModule({
       providers: [
         CustomerResolver,
         { provide: CustomerService, useValue: mockCustomerService },
@@ -24,10 +23,9 @@ describe('CustomerResolver', () => {
     })
       .overrideGuard(AuthGuard)
       .useValue({ canActivate: () => true })
-      .compile();
+      .compile()) as any;
 
-    resolver = module.get<CustomerResolver>(CustomerResolver);
-    customerService = module.get<CustomerService>(CustomerService);
+    resolver = moduleRef.get(CustomerResolver);
 
     jest.clearAllMocks();
   });

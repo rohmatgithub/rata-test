@@ -1,11 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { ScheduleResolver } from './schedule.resolver';
 import { ScheduleService } from './schedule.service';
 import { AuthGuard } from '../common/guards/auth.guard';
 
 describe('ScheduleResolver', () => {
   let resolver: ScheduleResolver;
-  let scheduleService: ScheduleService;
 
   const mockScheduleService = {
     create: jest.fn(),
@@ -15,7 +14,7 @@ describe('ScheduleResolver', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const moduleRef = (await Test.createTestingModule({
       providers: [
         ScheduleResolver,
         { provide: ScheduleService, useValue: mockScheduleService },
@@ -23,10 +22,9 @@ describe('ScheduleResolver', () => {
     })
       .overrideGuard(AuthGuard)
       .useValue({ canActivate: () => true })
-      .compile();
+      .compile()) as any;
 
-    resolver = module.get<ScheduleResolver>(ScheduleResolver);
-    scheduleService = module.get<ScheduleService>(ScheduleService);
+    resolver = moduleRef.get(ScheduleResolver);
 
     jest.clearAllMocks();
   });
@@ -36,7 +34,7 @@ describe('ScheduleResolver', () => {
     customerId: 'customer-id',
     doctorId: 'doctor-id',
     objective: 'Checkup',
-    scheduledAt: new Date('2026-06-10T10:00:00Z'),
+    scheduledAt: '2026-06-10T10:00:00Z',
     duration: 30,
     status: 'SCHEDULED',
   };
@@ -47,7 +45,7 @@ describe('ScheduleResolver', () => {
         customerId: 'customer-id',
         doctorId: 'doctor-id',
         objective: 'Checkup',
-        scheduledAt: new Date('2026-06-10T10:00:00Z'),
+        scheduledAt: '2026-06-10T10:00:00Z',
         duration: 30,
       };
       mockScheduleService.create.mockResolvedValue(mockSchedule);

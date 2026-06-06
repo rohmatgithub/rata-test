@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getScheduleClientWithAuth } from '@/lib/graphql-client';
+import { extractErrorInfo } from '@/lib/api-utils';
 import { gql } from 'graphql-request';
 
 const GET_CUSTOMER = gql`
@@ -47,8 +48,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Get customer error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch customer';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -70,8 +71,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Update customer error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to update customer';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -89,7 +90,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Delete customer error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete customer';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }

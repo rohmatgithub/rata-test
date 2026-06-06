@@ -31,7 +31,6 @@ import { GraphQLLoggingPlugin } from './common/plugins/graphql-logging.plugin';
     }),
     CacheModule.registerAsync({
       isGlobal: true,
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         store: await redisStore({
@@ -44,6 +43,7 @@ import { GraphQLLoggingPlugin } from './common/plugins/graphql-logging.plugin';
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
+      providers: [],
       useFactory: (configService: ConfigService) => ({
         pinoHttp: {
           level: configService.get('NODE_ENV') === 'production' ? 'info' : 'debug',
@@ -64,11 +64,13 @@ import { GraphQLLoggingPlugin } from './common/plugins/graphql-logging.plugin';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const isProduction = configService.get('NODE_ENV') === 'production';
+        const enablePlayground = configService.get('GRAPHQL_PLAYGROUND') === 'true' || !isProduction;
+        const enableIntrospection = configService.get('GRAPHQL_INTROSPECTION') === 'true' || !isProduction;
         return {
           autoSchemaFile: true,
           sortSchema: true,
-          playground: !isProduction,
-          introspection: !isProduction,
+          playground: enablePlayground,
+          introspection: enableIntrospection,
           context: ({ req }) => ({ req }),
           formatError: (error): GraphQLFormattedError => ({
             message: error.message,

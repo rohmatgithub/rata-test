@@ -1,10 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
 
 describe('AuthResolver', () => {
   let resolver: AuthResolver;
-  let authService: AuthService;
 
   const mockAuthService = {
     register: jest.fn(),
@@ -15,15 +14,14 @@ describe('AuthResolver', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = (await Test.createTestingModule({
       providers: [
         AuthResolver,
         { provide: AuthService, useValue: mockAuthService },
       ],
-    }).compile();
+    }).compile()) as any;
 
-    resolver = module.get<AuthResolver>(AuthResolver);
-    authService = module.get<AuthService>(AuthService);
+    resolver = module.get(AuthResolver);
 
     jest.clearAllMocks();
   });

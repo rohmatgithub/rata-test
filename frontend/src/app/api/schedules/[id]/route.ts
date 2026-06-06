@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getScheduleClientWithAuth } from '@/lib/graphql-client';
+import { extractErrorInfo } from '@/lib/api-utils';
 import { gql } from 'graphql-request';
 
 const GET_SCHEDULE = gql`
@@ -46,8 +47,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Get schedule error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch schedule';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -65,7 +66,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Delete schedule error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete schedule';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +14,6 @@ jest.mock('@nestjs/graphql', () => ({
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
-  let httpService: HttpService;
 
   const mockHttpService = {
     post: jest.fn(),
@@ -25,16 +24,15 @@ describe('AuthGuard', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = (await Test.createTestingModule({
       providers: [
         AuthGuard,
         { provide: HttpService, useValue: mockHttpService },
         { provide: ConfigService, useValue: mockConfigService },
       ],
-    }).compile();
+    }).compile()) as any;
 
-    guard = module.get<AuthGuard>(AuthGuard);
-    httpService = module.get<HttpService>(HttpService);
+    guard = module.get(AuthGuard);
 
     jest.clearAllMocks();
   });

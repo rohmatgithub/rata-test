@@ -109,6 +109,31 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
+### Docker Compose Commands
+
+| Command | Description |
+|---------|-------------|
+| `docker compose up -d` | Start containers (uses existing images, no rebuild) |
+| `docker compose up -d --build` | Rebuild images then start containers |
+| `docker compose build` | Build images only (no start) |
+| `docker compose build <service>` | Build specific service only |
+| `docker compose down` | Stop containers (data persists in volumes) |
+| `docker compose down -v` | Stop containers and delete volumes (fresh start) |
+
+**When to rebuild?**
+- After changing source code (`.ts`, `.js`)
+- After changing `package.json` / dependencies
+- After changing `Dockerfile`
+
+```bash
+# Rebuild specific services after code changes
+docker compose build auth-service schedule-service
+docker compose up -d
+
+# Or rebuild all and start
+docker compose up -d --build
+```
+
 Services will be available at:
 - **Frontend**: http://localhost:3000
 - Auth Service (GraphQL): http://localhost:3001/graphql

@@ -19,6 +19,21 @@ export class CustomerService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  private async clearListCache(): Promise<void> {
+    const pagesToClear = [1, 2, 3, 4, 5];
+    const limitsToClear = [10, 20, 50];
+
+    const deletePromises: Promise<unknown>[] = [];
+    for (const page of pagesToClear) {
+      for (const limit of limitsToClear) {
+        deletePromises.push(
+          this.cacheManager.del(`${CACHE_PREFIX}list:${page}:${limit}`)
+        );
+      }
+    }
+    await Promise.all(deletePromises);
+  }
+
   async create(input: CreateCustomerInput): Promise<Customer> {
     const existing = await this.prisma.customer.findUnique({
       where: { email: input.email },
@@ -28,9 +43,12 @@ export class CustomerService {
       throw new ConflictException('Customer with this email already exists');
     }
 
-    return this.prisma.customer.create({
+    const customer = await this.prisma.customer.create({
       data: input,
     });
+
+    await this.clearListCache();
+    return customer;
   }
 
   async findAll(pagination: PaginationInput): Promise<CustomersResponse> {
@@ -112,6 +130,7 @@ export class CustomerService {
     });
 
     await this.cacheManager.del(`${CACHE_PREFIX}${id}`);
+    await this.clearListCache();
     return updated;
   }
 
@@ -129,6 +148,7 @@ export class CustomerService {
     });
 
     await this.cacheManager.del(`${CACHE_PREFIX}${id}`);
+    await this.clearListCache();
     return true;
   }
 }

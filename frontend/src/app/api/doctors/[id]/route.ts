@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getScheduleClientWithAuth } from '@/lib/graphql-client';
+import { extractErrorInfo } from '@/lib/api-utils';
 import { gql } from 'graphql-request';
 
 const GET_DOCTOR = gql`
@@ -45,8 +46,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Get doctor error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch doctor';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -68,8 +69,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Update doctor error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to update doctor';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -87,7 +88,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Delete doctor error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete doctor';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }

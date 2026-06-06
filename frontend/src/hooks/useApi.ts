@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCallback } from 'react';
 
 export function useApi() {
-  const { accessToken, refreshAccessToken } = useAuth();
+  const { accessToken, refreshAccessToken, logout } = useAuth();
 
   const fetchWithAuth = useCallback(
     async (url: string, options: RequestInit = {}) => {
@@ -29,12 +29,19 @@ export function useApi() {
         token = await refreshAccessToken();
         if (token) {
           response = await makeRequest(token);
+          if (response.status === 401) {
+            await logout();
+            throw new Error('Session expired. Please login again.');
+          }
+        } else {
+          await logout();
+          throw new Error('Session expired. Please login again.');
         }
       }
 
       return response;
     },
-    [accessToken, refreshAccessToken]
+    [accessToken, refreshAccessToken, logout]
   );
 
   return { fetchWithAuth };

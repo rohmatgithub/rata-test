@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getScheduleClientWithAuth } from '@/lib/graphql-client';
+import { extractErrorInfo } from '@/lib/api-utils';
 import { gql } from 'graphql-request';
 
 const GET_DOCTORS = gql`
@@ -47,8 +48,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Get doctors error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch doctors';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Create doctor error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to create doctor';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const { message, status } = extractErrorInfo(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }

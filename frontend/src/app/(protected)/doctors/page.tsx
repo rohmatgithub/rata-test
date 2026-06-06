@@ -35,10 +35,15 @@ export default function DoctorsPage() {
     setIsLoading(true);
     try {
       const response = await fetchWithAuth(`/api/doctors?page=${page}&limit=10`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch doctors');
+      }
       const data: DoctorsResponse = await response.json();
-      setDoctors(data.doctors.data);
-      setTotal(data.doctors.total);
-      setTotalPages(data.doctors.totalPages);
+      if (data.doctors) {
+        setDoctors(data.doctors.data);
+        setTotal(data.doctors.total);
+        setTotalPages(data.doctors.totalPages);
+      }
     } catch (error) {
       console.error('Failed to fetch doctors:', error);
     } finally {

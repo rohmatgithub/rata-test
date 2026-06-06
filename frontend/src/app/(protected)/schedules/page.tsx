@@ -58,10 +58,15 @@ export default function SchedulesPage() {
     setIsLoading(true);
     try {
       const response = await fetchWithAuth(`/api/schedules?page=${page}&limit=10`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch schedules');
+      }
       const data: SchedulesResponse = await response.json();
-      setSchedules(data.schedules.data);
-      setTotal(data.schedules.total);
-      setTotalPages(data.schedules.totalPages);
+      if (data.schedules) {
+        setSchedules(data.schedules.data);
+        setTotal(data.schedules.total);
+        setTotalPages(data.schedules.totalPages);
+      }
     } catch (error) {
       console.error('Failed to fetch schedules:', error);
     } finally {
@@ -76,11 +81,13 @@ export default function SchedulesPage() {
         fetchWithAuth('/api/doctors?limit=100'),
       ]);
 
-      const customersData = await customersRes.json();
-      const doctorsData = await doctorsRes.json();
+      if (customersRes.ok && doctorsRes.ok) {
+        const customersData = await customersRes.json();
+        const doctorsData = await doctorsRes.json();
 
-      setCustomers(customersData.customers?.data || []);
-      setDoctors(doctorsData.doctors?.data || []);
+        setCustomers(customersData.customers?.data || []);
+        setDoctors(doctorsData.doctors?.data || []);
+      }
     } catch (error) {
       console.error('Failed to fetch options:', error);
     }

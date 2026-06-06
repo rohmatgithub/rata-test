@@ -14,11 +14,27 @@ export class DoctorService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  private async clearListCache(): Promise<void> {
+    const pagesToClear = [1, 2, 3, 4, 5];
+    const limitsToClear = [10, 20, 50];
+
+    const deletePromises: Promise<unknown>[] = [];
+    for (const page of pagesToClear) {
+      for (const limit of limitsToClear) {
+        deletePromises.push(
+          this.cacheManager.del(`${CACHE_PREFIX}list:${page}:${limit}`)
+        );
+      }
+    }
+    await Promise.all(deletePromises);
+  }
+
   async create(input: CreateDoctorInput): Promise<Doctor> {
     const doctor = await this.prisma.doctor.create({
       data: input,
     });
 
+    await this.clearListCache();
     return doctor;
   }
 
@@ -91,6 +107,7 @@ export class DoctorService {
     });
 
     await this.cacheManager.del(`${CACHE_PREFIX}${id}`);
+    await this.clearListCache();
     return updated;
   }
 
@@ -108,6 +125,7 @@ export class DoctorService {
     });
 
     await this.cacheManager.del(`${CACHE_PREFIX}${id}`);
+    await this.clearListCache();
     return true;
   }
 }

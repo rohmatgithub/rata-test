@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CustomerService } from './customer.service';
@@ -6,7 +6,6 @@ import { PrismaService } from '../prisma/prisma.service';
 
 describe('CustomerService', () => {
   let service: CustomerService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     customer: {
@@ -26,16 +25,15 @@ describe('CustomerService', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = (await Test.createTestingModule({
       providers: [
         CustomerService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: CACHE_MANAGER, useValue: mockCacheManager },
       ],
-    }).compile();
+    }).compile()) as any;
 
-    service = module.get<CustomerService>(CustomerService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    service = module.get(CustomerService);
 
     jest.clearAllMocks();
   });

@@ -45,6 +45,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key_min_32_chars_here}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
+      GRAPHQL_PLAYGROUND: ${GRAPHQL_PLAYGROUND:-true}
+      GRAPHQL_INTROSPECTION: ${GRAPHQL_INTROSPECTION:-true}
     ports:
       - "${AUTH_SERVICE_PORT:-3001}:3001"
     depends_on:
@@ -71,6 +73,8 @@ services:
       AUTH_SERVICE_URL: http://auth-service:3001
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      GRAPHQL_PLAYGROUND: ${GRAPHQL_PLAYGROUND:-true}
+      GRAPHQL_INTROSPECTION: ${GRAPHQL_INTROSPECTION:-true}
     ports:
       - "${SCHEDULE_SERVICE_PORT:-3002}:3002"
     depends_on:

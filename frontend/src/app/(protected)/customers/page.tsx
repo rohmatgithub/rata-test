@@ -36,10 +36,15 @@ export default function CustomersPage() {
     setIsLoading(true);
     try {
       const response = await fetchWithAuth(`/api/customers?page=${page}&limit=10`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch customers');
+      }
       const data: CustomersResponse = await response.json();
-      setCustomers(data.customers.data);
-      setTotal(data.customers.total);
-      setTotalPages(data.customers.totalPages);
+      if (data.customers) {
+        setCustomers(data.customers.data);
+        setTotal(data.customers.total);
+        setTotalPages(data.customers.totalPages);
+      }
     } catch (error) {
       console.error('Failed to fetch customers:', error);
     } finally {
