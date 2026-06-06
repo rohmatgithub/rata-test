@@ -227,6 +227,39 @@ The frontend uses Next.js API routes as a Backend-for-Frontend (BFF) layer:
 | REFRESH_TOKEN_EXPIRES_IN | Refresh token expiry     | 7d        |
 | AUTH_SERVICE_PORT        | Auth service port        | 3001      |
 | SCHEDULE_SERVICE_PORT    | Schedule service port    | 3002      |
+| SMTP_HOST                | SMTP server host         | smtp.gmail.com |
+| SMTP_PORT                | SMTP server port         | 587       |
+| SMTP_USER                | SMTP username/email      | -         |
+| SMTP_PASS                | SMTP password (app password) | -     |
+| SMTP_FROM                | Sender email address     | -         |
+
+### SMTP Configuration (Email Notifications)
+
+To enable email notifications when schedules are created/deleted:
+
+**Using Gmail:**
+1. Enable 2-Step Verification on your Google account
+2. Create an App Password at https://myaccount.google.com/apppasswords
+3. Configure `.env`:
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your16charapppassword
+SMTP_FROM=your_email@gmail.com
+```
+
+**Using Mailtrap (for development):**
+1. Sign up at https://mailtrap.io (free)
+2. Get credentials from your inbox settings
+3. Configure `.env`:
+```bash
+SMTP_HOST=sandbox.smtp.mailtrap.io
+SMTP_PORT=587
+SMTP_USER=your_mailtrap_username
+SMTP_PASS=your_mailtrap_password
+SMTP_FROM=noreply@healthcare.com
+```
 
 ## GraphQL API Examples
 
