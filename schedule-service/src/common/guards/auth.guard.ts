@@ -32,18 +32,29 @@ export class AuthGuard implements CanActivate {
 
     try {
       const authServiceUrl = this.configService.get('AUTH_SERVICE_URL');
+      const traceId = req.traceId || req.headers['x-trace-id'];
+
       const response = await firstValueFrom(
-        this.httpService.post(`${authServiceUrl}/graphql`, {
-          query: `
-            query ValidateToken($token: String!) {
-              validateToken(token: $token) {
-                id
-                email
+        this.httpService.post(
+          `${authServiceUrl}/graphql`,
+          {
+            query: `
+              query ValidateToken($token: String!) {
+                validateToken(token: $token) {
+                  id
+                  email
+                }
               }
-            }
-          `,
-          variables: { token },
-        }),
+            `,
+            variables: { token },
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              ...(traceId && { 'X-Trace-Id': traceId }),
+            },
+          },
+        ),
       );
 
       if (response.data.errors) {

@@ -1,20 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateDoctorInput, UpdateDoctorInput } from './dto';
+import { CreateDoctorInput, UpdateDoctorInput, Doctor, DoctorsResponse } from './dto';
 import { PaginationInput } from '../common/dto/pagination.input';
+
+const CACHE_TTL = 60 * 1000; // 60 seconds
+const CACHE_PREFIX = 'doctor:';
 
 @Injectable()
 export class DoctorService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
-  async create(input: CreateDoctorInput) {
-    return this.prisma.doctor.create({
+  async create(input: CreateDoctorInput): Promise<Doctor> {
+    const doctor = await this.prisma.doctor.create({
       data: input,
     });
+
+    return doctor;
   }
 
-  async findAll(pagination: PaginationInput) {
+  async findAll(pagination: PaginationInput): Promise<DoctorsResponse> {
     const { page = 1, limit = 10 } = pagination;
+    const cacheKey = `${CACHE_PREFIX}list:${page}:${limit}`;
+
+    const cached = await this.cacheManager.get<DoctorsResponse>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
@@ -26,16 +42,26 @@ export class DoctorService {
       this.prisma.doctor.count(),
     ]);
 
-    return {
+    const result: DoctorsResponse = {
       data,
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
     };
+
+    await this.cacheManager.set(cacheKey, result, CACHE_TTL);
+    return result;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Doctor> {
+    const cacheKey = `${CACHE_PREFIX}${id}`;
+
+    const cached = await this.cacheManager.get<Doctor>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const doctor = await this.prisma.doctor.findUnique({
       where: { id },
     });
@@ -44,10 +70,11 @@ export class DoctorService {
       throw new NotFoundException('Doctor not found');
     }
 
+    await this.cacheManager.set(cacheKey, doctor, CACHE_TTL);
     return doctor;
   }
 
-  async update(input: UpdateDoctorInput) {
+  async update(input: UpdateDoctorInput): Promise<Doctor> {
     const { id, ...data } = input;
 
     const doctor = await this.prisma.doctor.findUnique({
@@ -58,13 +85,16 @@ export class DoctorService {
       throw new NotFoundException('Doctor not found');
     }
 
-    return this.prisma.doctor.update({
+    const updated = await this.prisma.doctor.update({
       where: { id },
       data,
     });
+
+    await this.cacheManager.del(`${CACHE_PREFIX}${id}`);
+    return updated;
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<boolean> {
     const doctor = await this.prisma.doctor.findUnique({
       where: { id },
     });
@@ -77,6 +107,7 @@ export class DoctorService {
       where: { id },
     });
 
+    await this.cacheManager.del(`${CACHE_PREFIX}${id}`);
     return true;
   }
 }

@@ -3,14 +3,28 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Logger,
+  Inject,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateScheduleInput, ScheduleFilterInput } from './dto';
+import { CreateScheduleInput, ScheduleFilterInput, Schedule, SchedulesResponse } from './dto';
 import { PaginationInput } from '../common/dto/pagination.input';
+
+const CACHE_TTL = 60 * 1000; // 60 seconds
+const CACHE_PREFIX = 'schedule:';
 
 @Injectable()
 export class ScheduleService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ScheduleService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    @InjectQueue('email-queue') private emailQueue: Queue,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async create(input: CreateScheduleInput) {
     const customer = await this.prisma.customer.findUnique({
@@ -76,7 +90,7 @@ export class ScheduleService {
       }
     }
 
-    return this.prisma.schedule.create({
+    const schedule = await this.prisma.schedule.create({
       data: {
         objective: input.objective,
         customerId: input.customerId,
@@ -89,6 +103,23 @@ export class ScheduleService {
         doctor: true,
       },
     });
+
+    await this.emailQueue.add('schedule-created', {
+      customerEmail: customer.email,
+      customerName: customer.name,
+      doctorName: doctor.name,
+      objective: input.objective,
+      scheduledAt: scheduledAt.toISOString(),
+      duration: input.duration,
+    });
+
+    this.logger.log({
+      msg: 'Schedule created, email job added to queue',
+      scheduleId: schedule.id,
+      customerEmail: customer.email,
+    });
+
+    return schedule;
   }
 
   async findAll(pagination: PaginationInput, filter?: ScheduleFilterInput) {
@@ -138,7 +169,14 @@ export class ScheduleService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Schedule> {
+    const cacheKey = `${CACHE_PREFIX}${id}`;
+
+    const cached = await this.cacheManager.get<Schedule>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const schedule = await this.prisma.schedule.findUnique({
       where: { id },
       include: {
@@ -151,12 +189,17 @@ export class ScheduleService {
       throw new NotFoundException('Schedule not found');
     }
 
+    await this.cacheManager.set(cacheKey, schedule, CACHE_TTL);
     return schedule;
   }
 
   async remove(id: string) {
     const schedule = await this.prisma.schedule.findUnique({
       where: { id },
+      include: {
+        customer: true,
+        doctor: true,
+      },
     });
 
     if (!schedule) {
@@ -165,6 +208,22 @@ export class ScheduleService {
 
     await this.prisma.schedule.delete({
       where: { id },
+    });
+
+    await this.cacheManager.del(`${CACHE_PREFIX}${id}`);
+
+    await this.emailQueue.add('schedule-deleted', {
+      customerEmail: schedule.customer.email,
+      customerName: schedule.customer.name,
+      doctorName: schedule.doctor.name,
+      objective: schedule.objective,
+      scheduledAt: schedule.scheduledAt.toISOString(),
+    });
+
+    this.logger.log({
+      msg: 'Schedule deleted, email job added to queue',
+      scheduleId: id,
+      customerEmail: schedule.customer.email,
     });
 
     return true;

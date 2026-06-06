@@ -1,23 +1,23 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { User } from './user.model';
 
-@ObjectType()
+@ObjectType({ description: 'Authentication response containing tokens and user info' })
 export class AuthResponse {
-  @Field()
+  @Field({ description: 'JWT access token for API authentication' })
   accessToken: string;
 
-  @Field()
+  @Field({ description: 'JWT refresh token for obtaining new access tokens' })
   refreshToken: string;
 
-  @Field(() => User)
+  @Field(() => User, { description: 'Authenticated user information' })
   user: User;
 }
 
-@ObjectType()
+@ObjectType({ description: 'Response containing refreshed tokens' })
 export class RefreshTokenResponse {
-  @Field()
+  @Field({ description: 'New JWT access token' })
   accessToken: string;
 
-  @Field()
+  @Field({ description: 'New JWT refresh token' })
   refreshToken: string;
 }

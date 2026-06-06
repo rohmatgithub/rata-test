@@ -1,19 +1,19 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
-@ObjectType()
+@ObjectType({ description: 'Customer entity representing a patient in the healthcare system' })
 export class Customer {
-  @Field(() => ID)
+  @Field(() => ID, { description: 'Unique identifier for the customer' })
   id: string;
 
-  @Field()
+  @Field({ description: 'Full name of the customer' })
   name: string;
 
-  @Field()
+  @Field({ description: 'Email address of the customer (unique)' })
   email: string;
 
-  @Field()
+  @Field({ description: 'Timestamp when the customer was created' })
   createdAt: Date;
 
-  @Field()
+  @Field({ description: 'Timestamp when the customer was last updated' })
   updatedAt: Date;
 }
